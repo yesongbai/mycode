@@ -1,0 +1,93 @@
+'''
+https://www.hackerearth.com/problem/algorithm/dijkstras/description/
+
+SAMPLE INPUT 
+1
+5
+0 3 2 0 0
+3 0 5 3 0
+2 5 0 0 20
+0 3 0 0 4
+0 0 20 4 0
+0 4
+
+SAMPLE OUTPUT 
+10
+0 1 3 4
+'''
+
+class Node:
+    def __init__(self, index, successors, cost, source, ok):
+        self.index = index
+        self.successors = successors
+        self.cost = cost
+        self.source = source
+        self.ok = ok
+
+    def __str__(self):
+        return f"{self.index} {[node.index for node in self.successors]} cost={self.cost} source={self.source} ok={self.ok}"
+
+def findShortestPath(nodes, n, current, to):
+    for node in current.successors:
+        if not node.ok:
+            cost = current.cost + matrix[current.index][node.index]
+            if cost < node.cost:
+                node.cost = cost
+                node.source = current.index
+    costs = [node.cost for node in nodes if not node.ok and node.cost != float('inf')]
+    if len(costs) == 0:
+        return
+    minimum = min(costs)
+    nxt = next((node for node in nodes if not node.ok and node.cost == minimum))
+    nxt.ok = True
+    if nxt == to:
+        return
+    else:
+        findShortestPath(nodes, n, nxt, to)
+
+def findPath(matrix, n, frm, to, shortestPath):
+    if frm == to:
+        shortestPath.append(frm)
+        shortestPath.append(to)
+        return 0
+    nodes = []
+    for i in range(n):
+        nodes.append(Node(i, None, float('inf'), -1, False))
+    for i in range(n):
+        nodes[i].successors = [nodes[j] for j, v in enumerate(matrix[i]) if v != 0]
+    node = nodes[frm]
+    node.cost = 0
+    node.ok = True
+    findShortestPath(nodes, n, node, nodes[to])
+    node = nodes[to]
+    shortestPath.append(to)
+    if(node.source == -1):
+        shortestPath.append(-1)
+        shortestPath.reverse()
+        return float('inf')
+    else:
+        while(node.source != -1):
+            node = nodes[node.source]
+            shortestPath.append(node.index)
+        shortestPath.reverse()
+        return nodes[to].cost
+
+# Write your code here
+cases = int(input())
+for i in range(cases):
+    n = int(input())
+    matrix = [None]*n
+    for j in range(n):
+        matrix[j] = [0]*n
+        line = input().split(' ')
+        for k in range(n):
+            matrix[j][k] = int(line[k])
+    route = input().split(' ')
+    frm = int(route[0])
+    to = int(route[1])
+    path = []
+    cost = findPath(matrix, n, frm, to, path)
+    print(cost)
+    print(' '.join([str(index) for index in path]))
+
+
